@@ -26,8 +26,6 @@ const Enter: FC = () => {
     }
     
     const onFinish = (values: any) => {
-        console.log('Success:', values);
-
         localStorage.setItem('agent', values.agent);
         localStorage.setItem('desk', values.desk);
         history.push('/desktop');

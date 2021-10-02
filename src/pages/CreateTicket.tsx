@@ -1,8 +1,10 @@
-import React, { FC } from 'react'
+import React, { FC, useContext, useState } from 'react'
 import { Button, Col, Row, Typography } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import useHideMenu from '../hooks/useHideMenu';
 import { useLocation } from 'react-router';
+import { SocketContext } from '../context/SocketContext';
+import { Ticket } from '../types/types';
 
 const { Title, Text } = Typography;
 
@@ -13,9 +15,15 @@ const CreateTicket: FC = () => {
     
     useHideMenu(true, path);
 
-    const newTicket = () => {
+    const { socket } = useContext(SocketContext);
 
-    }
+    const [ticket, setTicket] = useState<Ticket>(null);    
+
+    const newTicket = () => {
+        socket?.emit('create-ticket', null, (ticket: Ticket) => {
+            setTicket(ticket);
+        });
+    };
 
     return (
         <>
@@ -34,12 +42,18 @@ const CreateTicket: FC = () => {
                 </Col>
             </Row>
 
-            <Row style={{ marginTop: 100 }}>
-                <Col span={ 24 } style={{ textAlign: "center", alignItems: "center", justifyContent: "center" }}>
-                    <Text style={{ display: 'block'}}> Su número</Text>
-                    <Text type="success" style={{ fontSize: 55}}>11</Text>
-                </Col>
-            </Row>
+            {
+                ticket && (
+                    <Row style={{ marginTop: 100 }}>
+                        <Col span={ 24 } style={{ textAlign: "center", alignItems: "center", justifyContent: "center" }}>
+                            <Text style={{ display: 'block'}}> Su número</Text>
+                            <Text type="success" style={{ fontSize: 55}}>{ ticket.number }</Text>
+                        </Col>
+                    </Row>
+
+                )
+            }
+            
         
         </>
     )

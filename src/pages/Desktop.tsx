@@ -1,10 +1,11 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useContext, useState } from 'react';
 import { Button, Col, Divider, Row, Typography } from 'antd';
 import { CloseCircleOutlined, RightOutlined } from '@ant-design/icons';
 import useHideMenu from '../hooks/useHideMenu';
 import { getUserLocalStorage } from '../helpers/getUserLocalStorage';
-import { User } from '../types/types';
+import { Ticket, User } from '../types/types';
 import { Redirect, useHistory } from 'react-router';
+import { SocketContext } from '../context/SocketContext';
 
 const { Title, Text } = Typography;
 
@@ -12,11 +13,15 @@ const Desktop: FC = () => {
 
     useHideMenu(false, 'enter');
 
+    const { socket } = useContext(SocketContext);
+
     const history = useHistory();
 
     const userLocalStorage: User = getUserLocalStorage() as User;
 
     const [user] = useState<User>(userLocalStorage);
+
+    const [ticket, setTicket] = useState<Ticket>(null);    
 
     if ( !user.agent || !user.desk ) {
         return <Redirect to="/enter" />
@@ -28,7 +33,10 @@ const Desktop: FC = () => {
     };
 
     const nextTicket = () => {
-
+        socket?.emit('attend-ticket', user, (ticket: Ticket) => {
+            console.log(ticket)
+            setTicket(ticket);
+        });
     };
 
     return (
@@ -56,12 +64,23 @@ const Desktop: FC = () => {
 
             <Divider />
 
-            <Row>
-                <Col>
-                    <Text>Está atendiendo el ticket número: </Text>
-                    <Text style={{fontSize: 30}} type="danger">4</Text>
-                </Col>
-            </Row>
+            {
+                ticket ? (
+                    <Row>
+                        <Col>
+                            <Text>Está atendiendo el ticket número: </Text>
+                            <Text style={{fontSize: 30}} type="danger">{ ticket?.number }</Text>
+                        </Col>
+                    </Row>
+
+                ) : (
+                    <Row>
+                        <Col>
+                            <Text>No quedan tickets para atender</Text>
+                        </Col>
+                    </Row>
+                )
+            }
 
             <Row>
                 <Col offset={ 18 } span={ 6 } >
